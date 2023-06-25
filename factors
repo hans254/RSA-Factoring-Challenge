@@ -1,0 +1,35 @@
+#!/usr/bin/python3
+
+from sys import argv
+
+import math
+
+
+def factory(number):
+    if number % 2 == 0:
+        a = 2
+        print("{}={}*{}".format(number, int(number//a), a))
+    else:
+        sq = int(math.sqrt(number)) + 1
+        for a in range(3, sq, +2):
+            if number % a == 0:
+                print("{}={}*{}".format(number, int(number//a), a))
+                return
+            if number % (sq + a) == 0:
+                print("{}={}*{}".format(number, sq + a, int(number//(sq + a))))
+                return
+            if number % (sq - a) == 0:
+                print("{}={}*{}".format(number, sq - 1, int(number//(sq - a))))
+                return
+
+
+def factors(filename):
+
+    with open(filename, encoding="utf-8") as my_file:
+        for a in my_file.readlines():
+            b = int(a)
+            result = factory(b)
+
+
+if __name__ == "__main__":
+    factors(argv[1])

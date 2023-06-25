@@ -1,35 +1,61 @@
 #!/usr/bin/python3
-
-from sys import argv
-
-import math
+from random import randint
 
 
-def factory(number):
-    if number % 2 == 0:
-        a = 2
-        print("{}={}*{}".format(number, int(number//a), a))
-    else:
-        sq = int(math.sqrt(number)) + 1
-        for a in range(3, sq, +2):
-            if number % a == 0:
-                print("{}={}*{}".format(number, int(number//a), a))
-                return
-            if number % (sq + a) == 0:
-                print("{}={}*{}".format(number, sq + a, int(number//(sq + a))))
-                return
-            if number % (sq - a) == 0:
-                print("{}={}*{}".format(number, sq - 1, int(number//(sq - a))))
-                return
+def GCDF(r, t):
+    while t:
+        r, t = t, r % t
+    return r
 
 
-def factors(filename):
+def _pollard_bren(c, b, z):
+    w = (z ** 2) % b + c
+    if w >= b:
+        w -= b
 
-    with open(filename, encoding="utf-8") as my_file:
-        for a in my_file.readlines():
-            b = int(a)
-            result = factory(b)
+    assert 0 <= w < b
+    return w
 
 
-if __name__ == "__main__":
-    factors(argv[1])
+def factorise_c(n, iterations=None):
+    y, c, m = (randint(1, n - 1) for w in range(3))
+    r, q, g = 1, 1, 1
+    i = 0
+    while g == 1:
+        x = y
+        for w in range(r):
+            y = _pollard_bren(c, n, y)
+        k = 0
+        while k < r and g == 1:
+            ys = y
+            for _ in range(min(m, r - k)):
+                y = _pollard_bren(c, n, y)
+                q = (q * abs(x - y)) %  n
+            g = GCDF(q, n)
+            k += m
+        r *= 2
+        if iterations:
+            i += 1
+            if i == iterations:
+                return None
+
+    if g == n:
+        while True:
+            ys = _pollard_bren(c, n, ys)
+            g = GCDF(abs(x - ys), n)
+            if g > 1:
+                break
+    return g
+
+
+if __name__ == '__main__':
+    from sys import argv
+
+    if len(argv) != 2:
+        exit(1)
+
+    with open(argv[1], "r") as f:
+        for i in f:
+            n = int(i[:-1])
+            res = factorise_c(n)
+            print("{}={}*{}".format(n, n // res, res))
